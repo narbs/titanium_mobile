@@ -7,10 +7,17 @@
 package ti.modules.titanium.network.socket;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
+
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
+import ti.modules.titanium.network.NetworkModule;
+import ti.modules.titanium.network.TiSocketFactory;
 
 import org.appcelerator.kroll.KrollDict;
 import org.appcelerator.kroll.KrollFunction;
@@ -28,12 +35,13 @@ public class TCPProxy extends KrollProxy implements TiStream
 {
 	private static final String TAG = "TCPProxy";
 
-	//private boolean initialized = false;
+	private SSLSocketFactory socketFactory = null;
 	private Socket clientSocket = null;
 	private ServerSocket serverSocket = null;
 	private boolean accepting = false;
 	private KrollDict acceptOptions = null;
 	private int state = 0;
+	private InputStream inputStream = null;
 
 	public TCPProxy()
 	{
@@ -57,6 +65,106 @@ public class TCPProxy extends KrollProxy implements TiStream
 		} else {
 			throw new Exception("Unable to call connect on socket in <" + state + "> state");
 		}
+	}
+
+	@Kroll.method
+	public void startTLS() throws Exception
+	{
+
+		new SSLSocketHandshakeThread().start();
+		
+	}
+
+	private class SSLSocketHandshakeThread extends Thread
+	{
+
+		public SSLSocketHandshakeThread()
+		{
+			super("SSLSocketHandshakeThread");
+		}
+
+		public void run()
+		{
+
+			int tlsVersion = NetworkModule.TLS_DEFAULT;
+
+			if (socketFactory == null) {
+			
+				try {
+					socketFactory = new TiSocketFactory(null, null, tlsVersion);
+					// Log.i(TAG, "Got socketFactory...");
+				} catch (Exception e) {
+					Log.e(TAG, "Error creating SSLSocketFactory: " + e.getMessage());
+					e.printStackTrace();
+					socketFactory = null;
+					updateState(SocketModule.ERROR, "error",
+						buildErrorCallbackArgs("Securing failed, could not create socket factory", 0));
+				}
+			
+			}
+
+			if (socketFactory == null) {
+				return;
+			}
+			
+			// Log.i(TAG, "Creating socket...");
+
+			String host = TiConvert.toString(getProperty("host"));
+			// Log.i(TAG, "host: " + host);
+			int port = TiConvert.toInt(getProperty("port"));
+			// Log.i(TAG, "port: " + port);
+
+			SSLSocket sslSocket = null;
+			SSLSession session = null;
+
+			try {
+
+				sslSocket = (SSLSocket) socketFactory.createSocket(host, port);
+
+				if (sslSocket != null) {
+
+					// Log.i(TAG, "Setting timeout...");
+					sslSocket.setSoTimeout(getProperties().optInt("timeout", 20000));
+
+					// Log.i(TAG, "Trying to get session...");
+					session = sslSocket.getSession();
+
+					// Log.i(TAG, "Testing if session valid...");
+					if (session != null && session.isValid()) {
+
+						// Log.i(TAG, "Session valid, sslSocket: " + sslSocket);
+						clientSocket = sslSocket;
+
+						// Log.i(TAG, "Getting input stream...");
+
+						// can throw IOException
+						inputStream = sslSocket.getInputStream();
+
+						// Log.i(TAG, "Getting securedCallback function...");
+						// Log.i(TAG, "Secured: " + securedCallback);
+						Object securedCallback = getProperty("secured");
+
+						// Log.i(TAG, "startTLS, securedCallback: " + securedCallback);
+
+						if (securedCallback != null && securedCallback instanceof KrollFunction) {
+							// Log.i(TAG, "Calling securedCallback function...");
+							((KrollFunction) securedCallback).callAsync(getKrollObject(), buildSecuredCallbackArgs());
+						}
+
+					} else {
+						Log.i(TAG, "Session NOT valid...");
+						updateState(SocketModule.ERROR, "error", buildErrorCallbackArgs("Securing failed", 0));
+					}
+
+				} // if sslSocket != null
+
+			} catch (IOException e) {
+				Log.e(TAG, "Error calling SSLSocketFactory.createSocket, IOException: " + e.getMessage());
+				e.printStackTrace();
+				updateState(SocketModule.ERROR, "error", buildErrorCallbackArgs("Unable to connect, IO error", 0));
+			}
+
+		} // run()
 	}
 
 	@Kroll.method
@@ -147,6 +255,15 @@ public class TCPProxy extends KrollProxy implements TiStream
 	}
 
 	@Kroll.setProperty
+	public void setSecured(KrollFunction secured)
+	// clang-format on
+	{
+		setSocketProperty("secured", secured);
+	}
+
+	// clang-format off
+	@Kroll.method
+	@Kroll.setProperty
 	public void setConnected(KrollFunction connected)
 	{
 		setSocketProperty("connected", connected);
@@ -197,6 +314,7 @@ public class TCPProxy extends KrollProxy implements TiStream
 					int timeout = TiConvert.toInt(timeoutProperty, 0);
 
 					clientSocket = new Socket();
+					clientSocket.setSoTimeout(timeout);
 					clientSocket.connect(new InetSocketAddress(host, TiConvert.toInt(getProperty("port"))), timeout);
 
 				} else {
@@ -291,6 +409,14 @@ public class TCPProxy extends KrollProxy implements TiStream
 		return callbackArgs;
 	}
 
+	private KrollDict buildSecuredCallbackArgs()
+	{
+		KrollDict callbackArgs = new KrollDict();
+		callbackArgs.put("socket", this);
+	
+		return callbackArgs;
+	}
+	
 	private KrollDict buildErrorCallbackArgs(String error, int errorCode)
 	{
 		KrollDict callbackArgs = new KrollDict();
@@ -418,6 +544,39 @@ public class TCPProxy extends KrollProxy implements TiStream
 		return isConnected();
 	}
 
+	private class CloseSocketThread extends Thread
+	{
+		public CloseSocketThread()
+	{
+			super("CloseSocketThread");
+		}
+
+		public void run()
+		{
+
+		if (state == SocketModule.CLOSED) {
+			return;
+		}
+
+		if ((state != SocketModule.CONNECTED) && (state != SocketModule.LISTENING)) {
+				Log.w(TAG, "Socket is not connected or listening, unable to call close on socket in <"
+					+ state + "> state", Log.DEBUG_MODE);
+				// throw new IOException("Socket is not connected or listening, unable to call close on socket in <"
+				//		+ state + "> state");
+				return;
+		}
+
+		try {
+			state = 0; // set socket state to uninitialized to prevent use while closing
+			closeSocket();
+			state = SocketModule.CLOSED;
+		} catch (Exception e) {
+			e.printStackTrace();
+				Log.w(TAG, "Error occured when closing socket", Log.DEBUG_MODE);
+			}
+		}
+	}
+
 	@Kroll.method
 	public void close() throws IOException
 	{
@@ -430,15 +589,7 @@ public class TCPProxy extends KrollProxy implements TiStream
 								  + "> state");
 		}
 
-		try {
-			state = 0; // set socket state to uninitialized to prevent use while closing
-			closeSocket();
-			state = SocketModule.CLOSED;
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new IOException("Error occured when closing socket");
-		}
+		new CloseSocketThread().start();
 	}
 
 	@Override

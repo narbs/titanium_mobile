@@ -451,16 +451,8 @@ public class TiHTTPClient
 
 	public boolean validatesSecureCertificate()
 	{
-		if (proxy.hasProperty("validatesSecureCertificate")) {
-			return TiConvert.toBoolean(proxy.getProperty("validatesSecureCertificate"));
-
-		} else {
-			if (TiApplication.getInstance().getDeployType().equals(TiApplication.DEPLOY_TYPE_PRODUCTION)) {
 				return true;
 			}
-		}
-		return false;
-	}
 
 	/*
 	public void addAuthFactory(String scheme, AuthSchemeFactory theFactory)
@@ -1075,8 +1067,6 @@ public class TiHTTPClient
 
 		if (sslSocketFactory != null) {
 			securedConnection.setSSLSocketFactory(sslSocketFactory);
-		} else if (!validating) {
-			securedConnection.setSSLSocketFactory(new NonValidatingSSLSocketFactory());
 		}
 
 		if (!validating) {
