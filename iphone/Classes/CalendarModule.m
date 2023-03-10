@@ -18,10 +18,10 @@
 
 - (EKEventStore *)store
 {
-    if (store == nil) {
-        store = [[EKEventStore alloc] init];
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(eventStoreChanged:) name:EKEventStoreChangedNotification object:nil];
-    }
+  if (store == nil) {
+    store = [[EKEventStore alloc] init];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(eventStoreChanged:) name:EKEventStoreChangedNotification object:nil];
+  }
   if (store == NULL) {
     DebugLog(@"[WARN] Could not access EventStore. ");
   }
@@ -102,41 +102,41 @@ GETTER_IMPL(NSArray<TiCalendarCalendar *> *, allCalendars, AllCalendars);
 
 - (NSArray<TiCalendarCalendar *> *)allEditableCalendars
 {
-    DebugLog(@"allEditableCalendars...");
+  DebugLog(@"allEditableCalendars...");
 
-    EKEventStore* ourStore = [self store];
+  EKEventStore *ourStore = [self store];
 
-    if (ourStore != nil) {
-        DebugLog(@"allEditableCalendars, refreshSourcesIfNecessary...");
-        [ourStore refreshSourcesIfNecessary];
-	 }
-	
-    if (![NSThread isMainThread]) {
-        __block id result = nil;
-        TiThreadPerformOnMainThread(
+  if (ourStore != nil) {
+    DebugLog(@"allEditableCalendars, refreshSourcesIfNecessary...");
+    [ourStore refreshSourcesIfNecessary];
+  }
+
+  if (![NSThread isMainThread]) {
+    __block id result = nil;
+    TiThreadPerformOnMainThread(
         ^{
           result = [[self allEditableCalendars] retain];
         },
         YES);
-        return [result autorelease];
+    return [result autorelease];
+  }
+
+  DebugLog(@"allEditableCalendars, iterating allEventKitCalendars...");
+  NSArray *calendars_ = [self allEventKitCalendars];
+
+  // NSMutableArray* editableCalendars = [NSMutableArray array];
+  NSMutableArray<TiCalendarCalendar *> *editableCalendars = [NSMutableArray array];
+  for (EKCalendar *calendar_ in calendars_) {
+    if ([calendar_ allowsContentModifications]) {
+      DebugLog(@"allEditableCalendars, adding editable calendar (loop)...");
+      // TiCalendarCalendar* calendar = [[TiCalendarCalendar alloc] _initWithPageContext:[self executionContext] calendar:calendar_ module:self];
+      TiCalendarCalendar *calendar = [[TiCalendarCalendar alloc] initWithCalendar:calendar_ module:self];
+      [editableCalendars addObject:calendar];
+      RELEASE_TO_NIL(calendar);
     }
-    
-    DebugLog(@"allEditableCalendars, iterating allEventKitCalendars...");
-    NSArray *calendars_ = [self allEventKitCalendars];
-    
-    // NSMutableArray* editableCalendars = [NSMutableArray array];
-    NSMutableArray<TiCalendarCalendar *> *editableCalendars = [NSMutableArray array];
-    for (EKCalendar* calendar_ in calendars_) {
-        if ([calendar_ allowsContentModifications]) {
-    			DebugLog(@"allEditableCalendars, adding editable calendar (loop)...");
-            // TiCalendarCalendar* calendar = [[TiCalendarCalendar alloc] _initWithPageContext:[self executionContext] calendar:calendar_ module:self];
-            TiCalendarCalendar *calendar = [[TiCalendarCalendar alloc] initWithCalendar:calendar_ module:self];
-            [editableCalendars addObject:calendar];
-      		RELEASE_TO_NIL(calendar);
-        }
-    }
-    DebugLog(@"allEditableCalendars, returning...");
-    return editableCalendars;
+  }
+  DebugLog(@"allEditableCalendars, returning...");
+  return editableCalendars;
 }
 GETTER_IMPL(NSArray<TiCalendarCalendar *> *, allEditableCalendars, AllEditableCalendars);
 
