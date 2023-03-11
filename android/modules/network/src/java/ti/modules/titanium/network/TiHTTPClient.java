@@ -451,8 +451,8 @@ public class TiHTTPClient
 
 	public boolean validatesSecureCertificate()
 	{
-				return true;
-			}
+		return true;
+	}
 
 	/*
 	public void addAuthFactory(String scheme, AuthSchemeFactory theFactory)

@@ -547,31 +547,31 @@ public class TCPProxy extends KrollProxy implements TiStream
 	private class CloseSocketThread extends Thread
 	{
 		public CloseSocketThread()
-	{
+		{
 			super("CloseSocketThread");
 		}
 
 		public void run()
 		{
 
-		if (state == SocketModule.CLOSED) {
-			return;
-		}
+			if (state == SocketModule.CLOSED) {
+				return;
+			}
 
-		if ((state != SocketModule.CONNECTED) && (state != SocketModule.LISTENING)) {
+			if ((state != SocketModule.CONNECTED) && (state != SocketModule.LISTENING)) {
 				Log.w(TAG, "Socket is not connected or listening, unable to call close on socket in <"
 					+ state + "> state", Log.DEBUG_MODE);
 				// throw new IOException("Socket is not connected or listening, unable to call close on socket in <"
 				//		+ state + "> state");
 				return;
-		}
+			}
 
-		try {
-			state = 0; // set socket state to uninitialized to prevent use while closing
-			closeSocket();
-			state = SocketModule.CLOSED;
-		} catch (Exception e) {
-			e.printStackTrace();
+			try {
+				state = 0; // set socket state to uninitialized to prevent use while closing
+				closeSocket();
+				state = SocketModule.CLOSED;
+			} catch (Exception e) {
+				e.printStackTrace();
 				Log.w(TAG, "Error occured when closing socket", Log.DEBUG_MODE);
 			}
 		}
