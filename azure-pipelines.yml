@@ -39,6 +39,7 @@ steps:
       export JAVA_HOME=$JAVA_HOME_17_X64
       echo "JAVA_HOME: $JAVA_HOME"
       java -version
+      #brew install ccache
 
 - task: Bash@3
   displayName: 'Java check'
@@ -46,6 +47,16 @@ steps:
     targetType: 'inline'
     script: |
       java -version
+
+- task: Bash@3
+  displayName: 'Brew ccache'
+  inputs:
+    targetType: 'inline'
+    script: |
+
+      # Install ccache with brew
+      # brew is preinstalled
+      brew install ccache
 
 
 - task: Bash@3
@@ -60,12 +71,12 @@ steps:
       # Build the Titanium framework, using a clean build:
       npm run cleanbuild
 
-- task: PublishPipelineArtifact@1
-  displayName: 'Publish zip file as an artifact'
-  inputs:
-    targetPath: '$(System.DefaultWorkingDirectory)/dist/mobilesdk-11.1.1.zip'
-    artifact: 'mobilesdk-11.1.1.zip'
-    publishLocation: 'pipeline'
+# - task: PublishPipelineArtifact@1
+#   displayName: 'Publish zip file as an artifact'
+#   inputs:
+#     targetPath: '$(System.DefaultWorkingDirectory)/dist/mobilesdk-11.1.1.zip'
+#     artifact: 'mobilesdk-11.1.1.zip'
+#     publishLocation: 'pipeline'
 
 # - task: UniversalPackages@0
 #   inputs:
