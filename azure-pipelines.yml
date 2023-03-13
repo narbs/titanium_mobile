@@ -83,6 +83,7 @@ steps:
 #       npm ci
 #       # Build the Titanium framework, using a clean build:
 #       npm run cleanbuild
+#       ls -al $(System.DefaultWorkingDirectory)/dist
 
 # - task: PublishPipelineArtifact@1
 #   displayName: 'Publish zip file as an artifact'
