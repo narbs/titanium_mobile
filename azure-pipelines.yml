@@ -34,9 +34,10 @@ steps:
   inputs:
     targetType: 'inline'
     script: |
-      # Set the right java version:
+      # Set the right java version. The Titanium framework uses Java 11 right now:
       echo "JAVA_HOME_17_X64: $JAVA_HOME_17_X64"
-      export JAVA_HOME=$JAVA_HOME_17_X64
+      # export JAVA_HOME=$JAVA_HOME_17_X64
+      export JAVA_HOME=$JAVA_HOME_11_X64
       echo "JAVA_HOME: $JAVA_HOME"
       java -version
 
@@ -48,29 +49,44 @@ steps:
       java -version
 
 - task: Bash@3
-  displayName: 'Brew ccache'
+  displayName: 'Java check'
   inputs:
     targetType: 'inline'
     script: |
-
-      # Install ccache with brew
-      # brew is preinstalled
-      brew install ccache
-
+      export BUILD_VERSION=$(sed -n 's/^ *"version": *"//p' package.json | tr -d '"' | tr -d ',' | tr -d '[[:space:]]')
+      java -version
 
 - task: Bash@3
-  displayName: 'Build Titanium'
+  displayName: 'Build version'
   inputs:
     targetType: 'inline'
     script: |
-      export JAVA_HOME=$JAVA_HOME_17_X64
-      echo "JAVA_HOME: $JAVA_HOME"
-      java -version
-      cd $(System.DefaultWorkingDirectory)
-      # Install Titanium CI dependencies (node_modules)
-      npm ci
-      # Build the Titanium framework, using a clean build:
-      npm run cleanbuild
+      export BUILD_VERSION=$(sed -n 's/^ *"version": *"//p' package.json | tr -d '"' | tr -d ',' | tr -d '[[:space:]]')
+
+- task: Bash@3
+  displayName: 'Build version check'
+  inputs:
+    targetType: 'inline'
+    script: |
+      echo $(BUILD_VERSION)
+      echo $BUILD_VERSION
+
+
+# - task: Bash@3
+#   displayName: 'Build Titanium'
+#   inputs:
+#     targetType: 'inline'
+#     script: |
+#       # Set the right java version. The Titanium framework uses Java 11 right now:
+#       # export JAVA_HOME=$JAVA_HOME_17_X64
+#       export JAVA_HOME=$JAVA_HOME_11_X64
+#       echo "JAVA_HOME: $JAVA_HOME"
+#       java -version
+#       cd $(System.DefaultWorkingDirectory)
+#       # Install Titanium CI dependencies (node_modules)
+#       npm ci
+#       # Build the Titanium framework, using a clean build:
+#       npm run cleanbuild
 
 # - task: PublishPipelineArtifact@1
 #   displayName: 'Publish zip file as an artifact'
