@@ -49,28 +49,23 @@ steps:
       java -version
 
 - task: Bash@3
-  displayName: 'Java check'
-  inputs:
-    targetType: 'inline'
-    script: |
-      java -version
-
-- task: Bash@3
   displayName: 'Build version'
   inputs:
     targetType: 'inline'
     script: |
-      export BUILD_VERSION=$(sed -n 's/^ *"version": *"//p' package.json | tr -d '"' | tr -d ',' | tr -d '[[:space:]]')
-      echo $(BUILD_VERSION)
-      echo $BUILD_VERSION
+      export build_number=$(sed -n 's/^ *"version": *"//p' package.json | tr -d '"' | tr -d ',' | tr -d '[[:space:]]')
+      echo "Build number: $(build_number)"
+      echo "Build number 2: $build_number"
+      echo "##vso[build.updatebuildnumber]$build_number"
 
 - task: Bash@3
   displayName: 'Build version check'
   inputs:
     targetType: 'inline'
     script: |
-      echo $(BUILD_VERSION)
-      echo $BUILD_VERSION
+      echo "Build number: $(build_number)"
+      echo "Build number 2: $build_number"
+      echo "Build number 3: $(Build.BuildNumber)"
 
 
 # - task: Bash@3
@@ -92,8 +87,8 @@ steps:
 # - task: PublishPipelineArtifact@1
 #   displayName: 'Publish zip file as an artifact'
 #   inputs:
-#     targetPath: '$(System.DefaultWorkingDirectory)/dist/mobilesdk-11.1.1.zip'
-#     artifact: 'mobilesdk-11.1.1.zip'
+#     targetPath: '$(System.DefaultWorkingDirectory)/dist/mobilesdk-$(Build.BuildNumber)-osx.zip'
+#     artifact: 'mobilesdk-$(Build.BuildNumber).GA.zip'
 #     publishLocation: 'pipeline'
 
 # - task: UniversalPackages@0
@@ -102,9 +97,9 @@ steps:
 #     publishDirectory: '$(Build.ArtifactStagingDirectory)'
 #     feedsToUsePublish: 'internal'
 #     vstsFeedPublish: '159a4be2-6a10-4946-a199-ceba2c906e34/91173f7c-449b-4969-b0f6-8b71905945d5'
-#     vstsFeedPackagePublish: 'vxf_tf_12.1.1.RC'
+#     vstsFeedPackagePublish: 'vxf-titanium-$(Build.BuildNumber).GA'
 #     versionOption: 'custom'
-#     versionPublish: '12.1.1.GA'
-#     packagePublishDescription: 'Titanium Framework 12.1.1.RC'
+#     versionPublish: '$(Build.BuildNumber).GA'
+#     packagePublishDescription: 'vx Field Titanium Framework $(Build.BuildNumber).GA'
 
 
