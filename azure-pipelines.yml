@@ -39,7 +39,6 @@ steps:
       export JAVA_HOME=$JAVA_HOME_17_X64
       echo "JAVA_HOME: $JAVA_HOME"
       java -version
-      #brew install ccache
 
 - task: Bash@3
   displayName: 'Java check'
@@ -64,7 +63,9 @@ steps:
   inputs:
     targetType: 'inline'
     script: |
-
+      export JAVA_HOME=$JAVA_HOME_17_X64
+      echo "JAVA_HOME: $JAVA_HOME"
+      java -version
       cd $(System.DefaultWorkingDirectory)
       # Install Titanium CI dependencies (node_modules)
       npm ci
