@@ -17,7 +17,7 @@
 pool:
   vmImage: 'macOS-12'
 
-variables:
+# variables:
 #  MAINMOB: $(System.DefaultWorkingDirectory)
 #  buildPatchNumber: $[counter(variables['build.reason'], 0)]
 
