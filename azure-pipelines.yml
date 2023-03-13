@@ -53,7 +53,6 @@ steps:
   inputs:
     targetType: 'inline'
     script: |
-      export BUILD_VERSION=$(sed -n 's/^ *"version": *"//p' package.json | tr -d '"' | tr -d ',' | tr -d '[[:space:]]')
       java -version
 
 - task: Bash@3
@@ -62,6 +61,8 @@ steps:
     targetType: 'inline'
     script: |
       export BUILD_VERSION=$(sed -n 's/^ *"version": *"//p' package.json | tr -d '"' | tr -d ',' | tr -d '[[:space:]]')
+      echo $(BUILD_VERSION)
+      echo $BUILD_VERSION
 
 - task: Bash@3
   displayName: 'Build version check'
