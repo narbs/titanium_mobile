@@ -600,6 +600,12 @@ DEFINE_EXCEPTIONS
   }
 }
 
+- (void)setTooltip_:(id)value
+{
+  UIToolTipInteraction *toolTipInteraction = [[UIToolTipInteraction alloc] initWithDefaultToolTip:[TiUtils stringValue:value]];
+  [self addInteraction:toolTipInteraction];
+}
+
 - (void)setOpacity_:(id)opacity
 {
   self.alpha = [TiUtils floatValue:opacity];
@@ -975,7 +981,7 @@ DEFINE_EXCEPTIONS
 
 /**
  This section of code for shadow support adapted from contributions by Martin Guillon
- See https://github.com/tidev/titanium_mobile/pull/2996
+ See https://github.com/tidev/titanium-sdk/pull/2996
  */
 - (void)assignShadowPropertyFromLayer:(CALayer *)fromLayer toLayer:(CALayer *)toLayer
 {
