@@ -85,7 +85,7 @@
                        withObject:[oldViewProxy view]
                    createIfNeeded:NO
                     waitUntilDone:NO];
-#else
+#elseif !TARGET_OS_MACCATALYST
     TiThreadPerformOnMainThread(
         ^{
           [[oldViewProxy view] removeFromSuperview];
