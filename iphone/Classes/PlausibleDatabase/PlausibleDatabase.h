@@ -67,25 +67,24 @@ extern NSString *PLDatabaseErrorVendorStringKey;
  * @ingroup enums
  */
 typedef enum {
-    /** An unknown error has occured. If this
+  /** An unknown error has occured. If this
      * code is received, it is a bug, and should be reported. */
-    PLDatabaseErrorUnknown = 0,
-    
-    /** File not found. */
-    PLDatabaseErrorFileNotFound = 1,
-    
-    /** An SQL query failed. */
-    PLDatabaseErrorQueryFailed = 2,
-    
-    /** The provided SQL statement was invalid. */
-    PLDatabaseErrorInvalidStatement = 3,
+  PLDatabaseErrorUnknown = 0,
+
+  /** File not found. */
+  PLDatabaseErrorFileNotFound = 1,
+
+  /** An SQL query failed. */
+  PLDatabaseErrorQueryFailed = 2,
+
+  /** The provided SQL statement was invalid. */
+  PLDatabaseErrorInvalidStatement = 3,
 } PLDatabaseError;
 
-
 /* Library Includes */
-#import "PLResultSet.h"
-#import "PLPreparedStatement.h"
 #import "PLDatabase.h"
+#import "PLPreparedStatement.h"
+#import "PLResultSet.h"
 
 #import "PLSqliteDatabase.h"
 #import "PLSqlitePreparedStatement.h"
@@ -96,9 +95,10 @@ typedef enum {
 @interface PlausibleDatabase : NSObject {
 }
 
-+ (NSError *) errorWithCode: (PLDatabaseError) errorCode localizedDescription: (NSString *) localizedDescription 
-                queryString: (NSString *) queryString
-                 vendorError: (NSNumber *) vendorError vendorErrorString: (NSString *) vendorErrorString;
++ (NSError *)errorWithCode:(PLDatabaseError)errorCode localizedDescription:(NSString *)localizedDescription
+               queryString:(NSString *)queryString
+               vendorError:(NSNumber *)vendorError
+         vendorErrorString:(NSString *)vendorErrorString;
 
 @end
 
@@ -235,4 +235,3 @@ typedef enum {
  * - #PLDatabaseErrorVendorErrorKey - The native database error code.
  * - #PLDatabaseErrorVendorStringKey - The native database error string.
  */
-
