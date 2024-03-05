@@ -75,25 +75,26 @@ NSString *PLDatabaseErrorVendorStringKey = @"com.plausiblelabs.pldatabase.error.
  * @param nativeString The native SQL driver's non-localized error string.
  * @return A NSError that may be returned to the API caller.
  */
-+ (NSError *) errorWithCode: (PLDatabaseError) errorCode localizedDescription: (NSString *) localizedDescription 
-                queryString: (NSString *) queryString vendorError: (NSNumber *) vendorError
-                vendorErrorString: (NSString *) vendorErrorString 
++ (NSError *)errorWithCode:(PLDatabaseError)errorCode localizedDescription:(NSString *)localizedDescription
+               queryString:(NSString *)queryString
+               vendorError:(NSNumber *)vendorError
+         vendorErrorString:(NSString *)vendorErrorString
 {
-    NSMutableDictionary *userInfo;
+  NSMutableDictionary *userInfo;
 
-    /* Create the userInfo dictionary */
-    userInfo = [NSMutableDictionary dictionaryWithObjectsAndKeys: 
-                localizedDescription, NSLocalizedDescriptionKey,
-                vendorError, TI_PLDatabaseErrorVendorErrorKey,
-                vendorErrorString, TI_PLDatabaseErrorVendorStringKey,
-                nil];
-    
-    /* Optionally insert the query string. */
-    if (queryString != nil)
-        [userInfo setObject: queryString forKey: TI_PLDatabaseErrorQueryStringKey];
-    
-    /* Return the NSError */
-    return [NSError errorWithDomain: TI_PLDatabaseErrorDomain code: errorCode userInfo: userInfo];
+  /* Create the userInfo dictionary */
+  userInfo = [NSMutableDictionary dictionaryWithObjectsAndKeys:
+                                      localizedDescription, NSLocalizedDescriptionKey,
+                                  vendorError, TI_PLDatabaseErrorVendorErrorKey,
+                                  vendorErrorString, TI_PLDatabaseErrorVendorStringKey,
+                                  nil];
+
+  /* Optionally insert the query string. */
+  if (queryString != nil)
+    [userInfo setObject:queryString forKey:TI_PLDatabaseErrorQueryStringKey];
+
+  /* Return the NSError */
+  return [NSError errorWithDomain:TI_PLDatabaseErrorDomain code:errorCode userInfo:userInfo];
 }
 
 @end
