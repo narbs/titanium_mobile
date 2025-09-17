@@ -20,11 +20,10 @@
 {
   if (store == nil) {
     store = [[EKEventStore alloc] init];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(eventStoreChanged:) name:EKEventStoreChangedNotification object:nil];
   }
   if (store == NULL) {
     DebugLog(@"[WARN] Could not access EventStore. ");
-  } else {
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(eventStoreChanged:) name:EKEventStoreChangedNotification object:nil];
   }
   return store;
 }
@@ -62,7 +61,7 @@
 - (void)eventStoreChanged:(NSNotification *)notification
 {
   if ([self _hasListeners:@"change"]) {
-    [self fireEvent:@"change" withDict:nil];
+    [self fireEvent:@"change" withDict:[NSMutableDictionary dictionary]];
   }
 }
 
@@ -103,6 +102,13 @@ GETTER_IMPL(NSArray<TiCalendarCalendar *> *, allCalendars, AllCalendars);
 
 - (NSArray<TiCalendarCalendar *> *)allEditableCalendars
 {
+
+  EKEventStore *ourStore = [self store];
+
+  if (ourStore != nil) {
+    [ourStore refreshSourcesIfNecessary];
+  }
+
   if (![NSThread isMainThread]) {
     __block id result = nil;
     TiThreadPerformOnMainThread(

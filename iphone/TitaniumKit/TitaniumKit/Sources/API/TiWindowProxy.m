@@ -617,7 +617,9 @@
 
       forceModal = [TiUtils boolValue:@"forceModal" properties:dict def:NO];
       theController.modalInPresentation = forceModal;
-
+#if TARGET_OS_MACCATALYST
+      theController.modalPresentationStyle = UIModalPresentationFullScreen;
+#endif
       BOOL animated = [TiUtils boolValue:@"animated" properties:dict def:YES];
       [[TiApp app] showModalController:theController animated:animated];
     } else {
