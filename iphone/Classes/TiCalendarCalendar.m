@@ -206,8 +206,7 @@ GETTER_IMPL(bool, hidden, Hidden);
         YES);
     return [result autorelease];
   }
-  // return [[self calendar] title];
-  return [NSString stringWithFormat:@"%@_|_%@_|_%d", [[self calendar] title], [[[self calendar] source] title], [[[self calendar] source] sourceType]];
+  return [[self calendar] title];
 }
 GETTER_IMPL(NSString *, name, Name);
 
